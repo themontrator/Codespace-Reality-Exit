@@ -1,14 +1,16 @@
 {
   "name": "Sing-box Reality Exit Node",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {
     "ghcr.io/devcontainers/features/sshd:1": {}
   },
-  "postCreateCommand": "bash install.sh",
+  "postCreateCommand": "./install.sh",
   "remoteUser": "root",
   "portsAttributes": {
     "443": {
-      "label": "VLESS Reality Port",
+      "label": "VLESS Reality",
       "onAutoForward": "ignore"
     }
   }
