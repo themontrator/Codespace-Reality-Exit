@@ -1,17 +1,33 @@
 {
-  "name": "Sing-box Reality Exit Node",
+  "name": "Codespace Reality Exit Node",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "./Dockerfile",
+    "context": "."
   },
   "features": {
-    "ghcr.io/devcontainers/features/sshd:1": {}
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": false
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
   },
-  "postCreateCommand": "./install.sh",
+  "postCreateCommand": "bash /app/install.sh",
+  "postAttachCommand": "bash -lc '/app/startup.sh'",
   "remoteUser": "root",
+  "forwardPorts": [443],
   "portsAttributes": {
     "443": {
-      "label": "VLESS Reality Port",
-      "onAutoForward": "ignore"
+      "label": "VLESS Reality",
+      "protocol": "https",
+      "onAutoForward": "silent"
     }
+  },
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb"
   }
 }
