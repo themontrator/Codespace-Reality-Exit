@@ -1,32 +1,44 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu
+FROM debian:bookworm-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Tehran
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=Asia/Tehran
 
-# نصب ابزارهای مورد نیاز
-RUN apt-get update && apt-get install -y \
-    curl \
-    unzip \
-    tmux \
-    openssl \
-    ca-certificates \
-    git \
-    sudo \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-# نصب آخرین نسخه Sing-box
-RUN bash -c "$(curl -fsSL https://sing-box.sagernet.org/install.sh)"
+# کپی فایل‌های پروژه
+COPY install.sh /app/install.sh
+COPY start.sh /app/start.sh
 
-USER root
+# نصب وابستگی‌ها با خروجی مرتب
+RUN echo "📦 Installing system dependencies..." && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    curl unzip tmux openssl ca-certificates git sudo \
+    && echo "✅ Dependencies installed successfully" && \
+    rm -rf /var/lib/apt/lists/*
 
-WORKDIR /workspaces/Codespace-Reality-Exit
+# نصب Sing-box
+RUN echo "⚙️ Installing Sing-box..." && \
+    bash <(curl -fsSL https://sing-box.sagernet.org/install.sh) && \
+    echo "✅ Sing-box installed successfully"
 
-# کپی فایل‌های اصلی پروژه از ریشه به داخل کانتینر
-COPY install.sh start.sh ./
-COPY reality_keys.txt config.json . 2>/dev/null || true
+# دادن مجوز اجرا
+RUN chmod +x /app/install.sh /app/start.sh
 
-RUN chmod +x install.sh start.sh
+# ایجاد startup.sh با بنر حرفه‌ای
+RUN echo '#!/bin/bash' > /app/startup.sh && \
+    echo 'echo ""' >> /app/startup.sh && \
+    echo 'echo "╔════════════════════════════════════════════════════════════╗"' >> /app/startup.sh && \
+    echo 'echo "║           🚀  Codespace Reality Exit Node  🚀             ║"' >> /app/startup.sh && \
+    echo 'echo "╚════════════════════════════════════════════════════════════╝"' >> /app/startup.sh && \
+    echo 'echo ""' >> /app/startup.sh && \
+    echo 'echo "📋 Status: Sing-box + VLESS-Reality is running"' >> /app/startup.sh && \
+    echo 'echo "🔌 Port: 443"' >> /app/startup.sh && \
+    echo 'echo ""' >> /app/startup.sh && \
+    echo 'echo "📌 For logs: tmux attach -t singbox"' >> /app/startup.sh && \
+    echo 'echo ""' >> /app/startup.sh && \
+    echo 'exec tmux new-session -d -s singbox "sing-box run -c /app/config.json" && tail -f /dev/null' >> /app/startup.sh && \
+    chmod +x /app/startup.sh
 
 EXPOSE 443
 
-CMD ["bash", "install.sh"]
+CMD ["/app/startup.sh"]
