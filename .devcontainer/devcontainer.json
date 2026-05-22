@@ -10,7 +10,7 @@
   "remoteUser": "root",
   "portsAttributes": {
     "443": {
-      "label": "VLESS Reality",
+      "label": "VLESS Reality Port",
       "onAutoForward": "ignore"
     }
   }
